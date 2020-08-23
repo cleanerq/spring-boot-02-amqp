@@ -3,6 +3,10 @@ package com.qby.springboot;
 import com.qby.springboot.bean.Book;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +23,9 @@ class SpringBoot02AmqpApplicationTests {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private AmqpAdmin amqpAdmin;
 
     /**
      * 单播：点对点消息
@@ -43,10 +50,15 @@ class SpringBoot02AmqpApplicationTests {
 
     @Test
     public void test01() {
+//        Book book = new Book();
+//        book.setBookName("西游记");
+//        book.setAuthor("吴承恩");
+//        rabbitTemplate.convertAndSend("exchange.direct", "qby.news", book);
+
         Book book = new Book();
-        book.setBookName("西游记");
-        book.setAuthor("吴承恩");
-        rabbitTemplate.convertAndSend("exchange.direct", "qby.news", book);
+        book.setBookName("红楼梦");
+        book.setAuthor("曹雪芹");
+        rabbitTemplate.convertAndSend("exchange.direct", "qby", book);
     }
 
     /**
@@ -55,6 +67,30 @@ class SpringBoot02AmqpApplicationTests {
     @Test
     public void test02() {
         rabbitTemplate.convertAndSend("exchange.fanout", "", new Book("三国演义", "罗贯中 "));
+    }
+
+    @Test
+    public void test03() {
+
+        DirectExchange directExchange = new DirectExchange("amqpadmin.exchange");
+        amqpAdmin.declareExchange(directExchange);
+        System.out.println("创建完成");
+    }
+
+    @Test
+    public void test04() {
+
+        amqpAdmin.declareQueue(new Queue("amqpadmin.queue",true));
+        System.out.println("创建完成");
+    }
+
+    @Test
+    public void test05() {
+
+        amqpAdmin.declareBinding(new Binding("amqpadmin.queue",
+                Binding.DestinationType.QUEUE, "amqpadmin.exchange",
+                "amqp.haha", null));
+        System.out.println("创建完成");
     }
 
 }
